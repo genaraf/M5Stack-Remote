@@ -16,21 +16,18 @@ enum {
   G_Y_OFFSET   
 };
 
-#define EEPROM_SIZE 128
-#define EPROM_CALLIBATION_OFFSET 64
+#define EEPROM_SIZE 80
+#define EPROM_CALLIBATION_OFFSET 65
+#define CALLIBRATION_VERSION 0x37
+#define CALL_NUMB 5
+#define SYSNUM     3
 
-TFT_eSprite Disbuff = TFT_eSprite(&M5.Lcd);
 extern const unsigned char connect_on[800];
 extern const unsigned char connect_off[800];
 
-#define SYSNUM 		3
-
 JoyC joyc;
-
-uint64_t realTime[4], time_count = 0;
-bool k_ready = false;
-uint32_t key_count = 0;
-bool connected = false;
+WiFiUDP Udp;
+TFT_eSprite Disbuff = TFT_eSprite(&M5.Lcd);
 
 IPAddress local_IP(192, 168, 4, 100 + SYSNUM );
 IPAddress gateway(192, 168, 4, 1);
@@ -40,10 +37,7 @@ IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
 const char *ssid = "M5AP";
 const char *password = "77777777";
-
-WiFiUDP Udp;
-
-uint8_t color[3] = {0, 100, 0};
+bool connected = false;
 
 
 uint8_t SendBuff[] = 	{ 0xAA, 0x55,
@@ -57,6 +51,14 @@ uint8_t SendBuff[] = 	{ 0xAA, 0x55,
                           0xee
                        };
 
+char APName[20];
+String WfifAPBuff[16];
+uint32_t count_bn_a = 0, choose = 0;
+String ssidname;
+
+uint32_t count = 0;
+int16_t lXOffset, lYOffset, rXOffset, rYOffset, gXOffset, gYOffset;
+
 void SendUDP()
 {
   if ( WiFi.status() == WL_CONNECTED )
@@ -67,15 +69,7 @@ void SendUDP()
   }
 }
 
-char APName[20];
-String WfifAPBuff[16];
-uint32_t count_bn_a = 0, choose = 0;
-String ssidname;
-uint32_t count = 0;
-int16_t lXOffset, lYOffset, rXOffset, rYOffset, gXOffet, gYOffset;
 
-#define CALL_NUMB 5
- 
 void callibration() {
   int cnt = 0;
   Disbuff.fillRect(0, 20, 80, 140, BLACK);
@@ -83,6 +77,7 @@ void callibration() {
   Disbuff.setCursor(20, 7);
   Disbuff.printf("%s", "Calib");
   Disbuff.pushSprite(0, 0);
+  
   do {
     delay(100);       
   } while(M5.BtnB.read() == 1);
@@ -93,7 +88,7 @@ void callibration() {
     lYOffset += 100 - SendBuff[L_Y_OFFSET];
     rXOffset += 100 - SendBuff[R_X_OFFSET];
     rYOffset += 100 - SendBuff[R_Y_OFFSET];
-    gXOffet  += 100 - SendBuff[G_X_OFFSET];
+    gXOffset += 100 - SendBuff[G_X_OFFSET];
     gYOffset += 100 - SendBuff[G_Y_OFFSET];
     displayData();
     delay(1000);       
@@ -107,15 +102,34 @@ void callibration() {
   lYOffset /= CALL_NUMB;
   rXOffset /= CALL_NUMB;
   rYOffset /= CALL_NUMB;
-  gXOffet  /= CALL_NUMB;
+  gXOffset /= CALL_NUMB;
   gYOffset /= CALL_NUMB;
-  int8_t calBuf[6];
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 0, CALLIBRATION_VERSION);
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 1, (int8_t)lXOffset);  
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 2, (int8_t)lYOffset);  
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 3, (int8_t)rXOffset);  
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 4, (int8_t)rYOffset);  
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 5, (int8_t)gXOffset);  
+  EEPROM.write(EPROM_CALLIBATION_OFFSET + 6, (int8_t)gYOffset);  
   
+}
+
+void readCalibration() {
+  if(EEPROM.read(EPROM_CALLIBATION_OFFSET) == CALLIBRATION_VERSION)
+  {
+    lXOffset = EEPROM.read(EPROM_CALLIBATION_OFFSET + 1);  
+    lYOffset = EEPROM.read(EPROM_CALLIBATION_OFFSET + 2);  
+    rXOffset = EEPROM.read(EPROM_CALLIBATION_OFFSET + 3);  
+    rYOffset = EEPROM.read(EPROM_CALLIBATION_OFFSET + 4);  
+    gXOffset = EEPROM.read(EPROM_CALLIBATION_OFFSET + 5);  
+    gYOffset = EEPROM.read(EPROM_CALLIBATION_OFFSET + 6);  
+  }
+
 }
 
 void setup() {
 
-  lXOffset = lYOffset = rXOffset = rYOffset = gXOffet = gYOffset = 0;
+  lXOffset = lYOffset = rXOffset = rYOffset = gXOffset = gYOffset = 0;
   M5.begin();
   Wire.begin(0, 26, 400000);
   EEPROM.begin(EEPROM_SIZE);
@@ -129,6 +143,8 @@ void setup() {
   M5.IMU.Init();
   if(M5.BtnB.read() == 1) {
     callibration();   
+  } else {
+    readCalibration();
   }
   
   Disbuff.fillRect(0, 0, 80, 20, Disbuff.color565(50, 50, 50));
@@ -148,10 +164,11 @@ void setup() {
     esp_wifi_set_protocol( WIFI_IF_STA, WIFI_PROTOCOL_LR );
 #endif
     WiFi.mode(WIFI_STA);
-    int n = WiFi.scanNetworks();
     Disbuff.setTextSize(1);
     Disbuff.setTextColor(GREEN);
     Disbuff.fillRect(0, 0, 80, 20, Disbuff.color565(50, 50, 50));
+
+    int n = WiFi.scanNetworks();
 
     if (n == 0) {
       Disbuff.setCursor(5, 20);
@@ -366,8 +383,8 @@ void loop() {
     SendBuff[L_Y_OFFSET] += lYOffset;
     SendBuff[R_X_OFFSET] += rXOffset;
     SendBuff[R_Y_OFFSET] += rYOffset;
-    SendBuff[G_X_OFFSET] += gXOffet;
-    SendBuff[G_X_OFFSET] += gYOffset;
+    SendBuff[G_X_OFFSET] += gXOffset;
+    SendBuff[G_Y_OFFSET] += gYOffset;
     SendUDP();
   }
 
