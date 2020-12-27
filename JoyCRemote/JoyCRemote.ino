@@ -20,7 +20,7 @@ enum {
 #define EPROM_CALLIBATION_OFFSET 65
 #define CALLIBRATION_VERSION 0x37
 #define CALL_NUMB 5
-#define SYSNUM     3
+#define SYSNUM    3
 
 extern const unsigned char connect_on[800];
 extern const unsigned char connect_off[800];
@@ -58,6 +58,7 @@ String ssidname;
 
 uint32_t count = 0;
 int16_t lXOffset, lYOffset, rXOffset, rYOffset, gXOffset, gYOffset;
+uint16_t lockDialplayData = 0;
 
 void SendUDP()
 {
@@ -69,6 +70,24 @@ void SendUDP()
   }
 }
 
+void ReceiveMessage() {
+  uint8_t len = Udp.parsePacket();
+  if(len > 0) {
+  Serial.printf("receive message");
+    char rxdata[len + 1];
+    Udp.read(rxdata, len);
+    if ((rxdata[0] == 0xAA ) && (rxdata[1] == 0x55 )) {
+      rxdata[len] = 0;
+      Disbuff.fillRect( 0, 30, 80, 130, BLACK);
+      Disbuff.setCursor(0, 30);
+      uint16_t color = ((uint16_t)rxdata[5] << 8) + (uint16_t)rxdata[4];
+      Disbuff.setTextColor(color);
+      Disbuff.printf("%s", &rxdata[6]);
+      Disbuff.pushSprite(0, 0);
+      lockDialplayData = 500;
+    }
+  }  
+}
 
 void callibration() {
   int cnt = 0;
@@ -386,9 +405,16 @@ void loop() {
     SendBuff[G_X_OFFSET] += gXOffset;
     SendBuff[G_Y_OFFSET] += gYOffset;
     SendUDP();
+ //   if(Udp.available()) {
+      ReceiveMessage();  
+//    }
   }
 
   displayStatus();
-  displayData();   
+  if(lockDialplayData == 0) { 
+    displayData();
+  } else {
+    lockDialplayData--;  
+  }
   Disbuff.pushSprite(0, 0);
 }

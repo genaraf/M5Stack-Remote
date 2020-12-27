@@ -3,15 +3,28 @@ Servo servo;
 
 #include <Servo.h>
 
+struct SrvCtl {
+  Servo* srv;
+  int pin;
+  int min;
+  int max;
+  int def;
+  float rate;
+  float pos;
+  
+};
 
-static const int servoPin = 25;
+SrvCtl servs[] = {
+    { NULL, 25, 0, 180, 90, 0.01, 0 }
+};
 
-Servo servo1;
-
-void RoverInit() {
-    servo1.attach(servoPin);
+void ControlInit() {
+    for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
+      servs[i].srv = new Servo();
+      servs[i].srv->attach(servs[i].pin);
+      servs[i].srv->write(servs[i].def); 
+    }  
 }
-
 
 
 static int16_t speed_buff[4] = {0};
@@ -43,7 +56,15 @@ static uint8_t Setspeed( int16_t Vtx, int16_t Vty, int16_t Wt)
 }
 
 void ProcessingCommand(uint8_t lx, uint8_t ly, uint8_t rx, uint8_t ry, uint8_t btn, uint8_t gx, uint8_t gy ) {
-      servo1.write(lx);
+      if((lx < 95) || (lx > 105)) {
+        servs[0].pos += ((float)lx - 100.0) * servs[0].rate;
+        if(servs[0].pos > servs[0].max)
+          servs[0].pos = servs[0].max;
+        if(servs[0].pos < servs[0].min)
+          servs[0].pos = servs[0].min;
+        Serial.printf("%f\r\n", servs[0].pos);    
+        servs[0].srv->write((int)servs[0].pos);
+      }
 /*
       if ( udodata[6] == 0x01 )
       {
