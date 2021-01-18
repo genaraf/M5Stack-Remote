@@ -150,7 +150,10 @@ void setup() {
 
   lXOffset = lYOffset = rXOffset = rYOffset = gXOffset = gYOffset = 0;
   M5.begin();
+  M5.Axp.SetChargeCurrent(CURRENT_360MA);
+
   Wire.begin(0, 26, 400000);
+  
   EEPROM.begin(EEPROM_SIZE);
 
   M5.Lcd.setRotation(4);

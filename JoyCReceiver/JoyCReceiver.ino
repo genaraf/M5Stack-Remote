@@ -6,7 +6,7 @@
 //#define DEBUG
 
 extern void ControlInit();
-extern void ProcessingCommand(uint8_t lx, uint8_t ly, uint8_t rx, uint8_t ry, uint8_t btn, uint8_t gx, uint8_t gy);
+extern void ProcessingCommand(int lx, int ly, int rx, int ry, uint8_t btn, uint8_t gx, uint8_t gy);
 extern void ProcessingDisconnect();
 
 const char *ssid = "M5AP";
@@ -70,6 +70,10 @@ void sendMessage(uint8_t event_id, uint16_t color, char* text) {
   Udp1.endPacket();
 }
 
+int norm(uint8_t val) {
+  int i = val;
+  return val - 100;  
+}
 
 void loop()
 {
@@ -86,8 +90,8 @@ void loop()
         Serial.printf("%02X ", rxdata[i]);
       }
       Serial.println();    
-#endif      
-      ProcessingCommand(rxdata[4], rxdata[5], rxdata[6], rxdata[7], rxdata[8], rxdata[9], rxdata[10]);
+#endif
+      ProcessingCommand(norm(rxdata[4]), norm(rxdata[5]), norm(rxdata[6]), norm((int)rxdata[7]), rxdata[8], rxdata[9], rxdata[10]);
       received = true;
     }
   } else {
