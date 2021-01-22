@@ -1,3 +1,18 @@
+// Atom PINOUT
+// EXT G19 
+// EXT G22 
+// EXT G23, G34 (ADC1 CH6)
+// EXT G33 (ADC1 CH5)
+
+// EXT G21 (SCL) IMU 
+// EXT G25 (SDA) IMU (DAC1)
+// 
+// GROVE G32 
+// GROVE G26 
+// 
+// G27 - Neopixel
+// G39 - Button
+
 #include "M5Atom.h"
 #include <WiFi.h>
 #include <WiFiUdp.h>
@@ -15,6 +30,8 @@ const char *password = "77777777";
 #define CTL_MESSAGE_LEN 12
 #define GREEN 0x2589
 
+#define BATTERY_CHECK 
+
 WiFiServer server(80);
 WiFiUDP Udp1;
 IPAddress remoteIP;
@@ -26,6 +43,7 @@ uint8_t txCnt = 0;
 void setup()
 {
   M5.begin(true, false, true);
+
   delay(50);
   M5.update();
   Wire.begin(0, 26, 10000);

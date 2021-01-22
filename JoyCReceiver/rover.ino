@@ -14,12 +14,21 @@ struct SrvCtl {
   
 };
 
+
 SrvCtl servs[] = {
-    { NULL, 25, 0, 180, 91, 0.01, 0 },
-    { NULL, 21, 0, 180, 93, 0.01, 0 }
+    { NULL, 19, 0, 180, 93, 0.01, 0 },
+    { NULL, 22, 0, 180, 91, 0.01, 0 },
+    { NULL, 23, 0, 180, 180, 0.01, 0 }
 };
 
 void ControlInit() {
+
+#ifdef BATTERY_CHECK  
+  pinMode(GPIO_NUM_34, INPUT);
+  gpio_pulldown_dis(GPIO_NUM_23);
+  gpio_pullup_dis(GPIO_NUM_23);
+#endif /* BATTERY_CHECK */
+  
     for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
       servs[i].srv = new Servo();
       servs[i].srv->attach(servs[i].pin);

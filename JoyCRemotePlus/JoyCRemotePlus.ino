@@ -14,7 +14,7 @@
 #define LINE_SPACE  20
 #define VOLT_OFFSET 25
 #define RSSI_OFSET  90
-
+#define TEXT_SIZE   2
 
 enum {
   L_X_OFFSET = 4,   
@@ -181,7 +181,7 @@ void setup() {
   
   Disbuff.fillRect(0, 0, LCD_WIDTH, 20, Disbuff.color565(50, 50, 50));
   Disbuff.fillRect(0, STATUS_HEIGHT, LCD_WIDTH, LCD_HEIGHT, BLACK);
-  Disbuff.setTextSize(2);
+  Disbuff.setTextSize(TEXT_SIZE);
   Disbuff.setTextColor(GREEN);
   Disbuff.setCursor(55, 6);
 
@@ -196,7 +196,7 @@ void setup() {
     esp_wifi_set_protocol( WIFI_IF_STA, WIFI_PROTOCOL_LR );
 #endif
     WiFi.mode(WIFI_STA);
-    Disbuff.setTextSize(2);
+    Disbuff.setTextSize(TEXT_SIZE);
     Disbuff.setTextColor(GREEN);
     Disbuff.fillRect(0, 0, LCD_WIDTH, STATUS_HEIGHT, Disbuff.color565(50, 50, 50));
     displayStatus();

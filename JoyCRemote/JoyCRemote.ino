@@ -150,7 +150,7 @@ void setup() {
 
   lXOffset = lYOffset = rXOffset = rYOffset = gXOffset = gYOffset = 0;
   M5.begin();
-  M5.Axp.SetChargeCurrent(CURRENT_360MA);
+  M5.Axp.SetChargeCurrent(CURRENT_100MA);
 
   Wire.begin(0, 26, 400000);
   
@@ -189,7 +189,9 @@ void setup() {
     Disbuff.setTextSize(1);
     Disbuff.setTextColor(GREEN);
     Disbuff.fillRect(0, 0, 80, 20, Disbuff.color565(50, 50, 50));
-
+    displayStatus();
+    Disbuff.pushSprite(0, 0);
+    
     int n = WiFi.scanNetworks();
 
     if (n == 0) {
@@ -289,6 +291,8 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    displayStatus();
+    Disbuff.pushSprite(0, 0);
   }
 
 
