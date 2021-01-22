@@ -1,4 +1,11 @@
+#define M5STICKCPLUS
+
+#ifdef M5STICKCPLUS
 #include "M5StickCPlus.h"
+#else 
+#include "M5StickC.h"
+#endif /* M5STICKCPLUS */
+
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <esp_wifi.h>
@@ -6,16 +13,30 @@
 #include "EEPROM.h"
 #include "JoyC.h"
 
-#define LCD_WIDTH  135
-#define LCD_HEIGHT 240
-#define STATUS_HEIGHT 25
-#define MSG_TOP     40
-#define TEXT_LEFT   15
-#define LINE_SPACE  20
-#define VOLT_OFFSET 25
-#define RSSI_OFSET  90
-#define TEXT_SIZE   2
-
+#ifdef M5STICKCPLUS
+  #define LCD_WIDTH  135
+  #define LCD_HEIGHT 240
+  #define STATUS_HEIGHT 25
+  #define MSG_TOP     40
+  #define MSG_LEFT    5
+  #define TEXT_LEFT   15
+  #define LINE_SPACE  20
+  #define VOLT_OFFSET 25
+  #define RSSI_OFSET  90
+  #define TEXT_SIZE   2
+#else
+  #define LCD_WIDTH  80
+  #define LCD_HEIGHT 140
+  #define STATUS_HEIGHT 20
+  #define MSG_TOP     30
+  #define MSG_LEFT    0
+  #define TEXT_LEFT   10
+  #define LINE_SPACE  15
+  #define VOLT_OFFSET 22
+  #define RSSI_OFSET  60
+  #define TEXT_SIZE   1
+#endif /* M5STICKCPLUS */ 
+ 
 enum {
   L_X_OFFSET = 4,   
   L_Y_OFFSET,   
@@ -70,8 +91,7 @@ uint32_t count = 0;
 int16_t lXOffset, lYOffset, rXOffset, rYOffset, gXOffset, gYOffset;
 uint16_t lockDialplayData = 0;
 
-void SendUDP()
-{
+void SendUDP() {
   if ( WiFi.status() == WL_CONNECTED )
   {
     Udp.beginPacket(IPAddress(192, 168, 4, 1), 1000 + SYSNUM );
@@ -88,13 +108,16 @@ void ReceiveMessage() {
     Udp.read(rxdata, len);
     if ((rxdata[0] == 0xAA ) && (rxdata[1] == 0x55 )) {
       rxdata[len] = 0;
-      Disbuff.fillRect( 0, 30, LCD_WIDTH, LCD_HEIGHT, BLACK);
-      Disbuff.setCursor(5, MSG_TOP);
+      Disbuff.fillRect( 0, MSG_TOP, LCD_WIDTH, LCD_HEIGHT, BLACK);
+      Disbuff.setCursor(MSG_LEFT, MSG_TOP);
       uint16_t color = ((uint16_t)rxdata[5] << 8) + (uint16_t)rxdata[4];
       Disbuff.setTextColor(color);
       Disbuff.printf("%s", &rxdata[6]);
       Disbuff.pushSprite(0, 0);
       lockDialplayData = 500;
+  #ifdef M5STICKCPLUS
+      M5.Beep.tone(1500, 1000);
+  #endif /* M5STICKCPLUS */      
     }
   }  
 }
@@ -165,6 +188,10 @@ void setup() {
   Wire.begin(0, 26, 400000);
   
   EEPROM.begin(EEPROM_SIZE);
+
+  #ifdef M5STICKCPLUS
+      M5.Beep.setVolume(10);
+  #endif /* M5STICKCPLUS */
 
   M5.Lcd.setRotation(4);
   M5.Lcd.setSwapBytes(false);
@@ -389,7 +416,11 @@ void displayStatus() {
 
 void loop() {
   delay(10);
-
+  
+  #ifdef M5STICKCPLUS
+    M5.Beep.update();
+  #endif /* M5STICKCPLUS */
+  
   if ( WiFi.status() != WL_CONNECTED )
   {
     if(connected) {
