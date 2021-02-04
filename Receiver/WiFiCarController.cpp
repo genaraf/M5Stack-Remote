@@ -1,5 +1,8 @@
+#include "config.h"
+
+#ifdef MODEL_WIFICAR
+
 #include <Arduino.h>
-#include "WiFiCarController.h"
 
 static const uint8_t pwm_A = 5 ;
 static const uint8_t pwm_B = 4;
@@ -75,3 +78,5 @@ void WiFiCarController::MotorControl(int id, int speed) {
     }
   }
 }
+
+#endif /* MODEL_WIFICAR */

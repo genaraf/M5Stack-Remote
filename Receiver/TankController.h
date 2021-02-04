@@ -1,3 +1,5 @@
+
+#ifdef MODEL_TANK
 #include "control_base.h"
 
 class TankController : public ControlBase {
@@ -8,5 +10,6 @@ class TankController : public ControlBase {
     virtual void Disconnected();
     virtual void Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy);  
     virtual void Idle();
-    void MotorControl(int id, int speed);
+  private:  
 }
+#endif /* MODEL_TANK */

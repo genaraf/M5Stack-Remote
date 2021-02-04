@@ -1,3 +1,6 @@
+#include "config.h"
+
+#ifdef MODEL_TANK
 // Atom PINOUT
 // EXT G19 
 // EXT G22 
@@ -12,11 +15,7 @@
 // 
 // G27 - Neopixel
 // G39 - Button
-
 #include <M5Atom.h>
-
-#include "TankController.h"
-
 #include <Servo.h>
 
 struct SrvCtl {
@@ -98,3 +97,4 @@ void TankController::Idle() {
     }
   }
 }
+#endif /* MODEL_TANK */

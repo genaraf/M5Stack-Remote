@@ -1,4 +1,6 @@
 
+#include "config.h"
+
 #ifdef ESP32
   #include <WiFi.h>
 #else
@@ -7,8 +9,7 @@
 
 #include <WiFiUdp.h>
 
-#include "WiFiCarController.h"
-WiFiCarController cntrl;
+CONTROLLER cntrl;
 
 #define DEBUG
 
