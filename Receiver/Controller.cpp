@@ -1,3 +1,6 @@
+#include "config.h"
+
+#ifdef MODEL_MODELNAME
 
 #include "Controller.h"
 
@@ -23,3 +26,5 @@ void Controller::Command(int lx, int ly, int rx, int ry, unsigned char btn, int 
 void Controller::Idle() { 
 
 }
+
+#endif /* MODEL_MODELNAME */

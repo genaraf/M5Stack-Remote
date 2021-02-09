@@ -9,54 +9,16 @@
 #ifndef _HAT_JOYC_H_
 #define _HAT_JOYC_H_
 
-#include "Arduino.h"
+#include "JoystickBase.h"
 
-class JoyC
-{
+class JoyC: public JoystickBase {
     public:
-        /**
-         * @description: 
-         * @param color: (r << 16) | (g << 8) | b 
-         * @return: 
-         */        
-        void SetLedColor(uint32_t color);
-
-        /**
-         * @description: 
-         * @param pos: 0: left, 1: right 
-         * @return: x value: 0 ~ 200
-         */        
-        uint8_t GetX(uint8_t pos);
-        
-        /**
-         * @description: 
-         * @param pos: 0: left, 1: right 
-         * @return: y value: 0 ~ 200
-         */       
-        uint8_t GetY(uint8_t pos);
-        
-        /**
-         * @description: 
-         * @param pos: 0: left, 1: right 
-         * @return: angle value: 0 ~ 360
-         */        
-        uint16_t GetAngle(uint8_t pos);
-
-        /**
-         * @description: 
-         * @param pos: 0: left, 1: right 
-         * @return: 
-         */        
-        uint16_t GetDistance(uint8_t pos);
-        
-        /**
-         * @description: 
-         * @param pos: 0: left, 1: right 
-         * @return: 0 or 1
-         */        
-        uint8_t GetPress(uint8_t pos);
-        
-    private:
+        virtual void Init() {};
+        virtual void Read() {};
+        virtual void SetLedColor(uint32_t color);
+        virtual uint8_t GetX(uint8_t pos);
+        virtual uint8_t GetY(uint8_t pos);
+        virtual uint8_t GetPress(uint8_t pos);
 };
 
 #endif

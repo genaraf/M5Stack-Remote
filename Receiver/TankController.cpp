@@ -1,3 +1,8 @@
+// 
+// 3D model on https://www.thingiverse.com/thing:3013262
+// Controller  https://m5stack.com/collections/m5-atom/products/atom-lite-esp32-development-kit
+// 
+
 #include "config.h"
 
 #ifdef MODEL_TANK

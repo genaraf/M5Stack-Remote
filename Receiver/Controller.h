@@ -1,3 +1,5 @@
+#ifdef MODEL_MODELNAME
+
 #include "control_base.h"
 
 class Controller : public ControlBase {
@@ -8,5 +10,8 @@ class Controller : public ControlBase {
     virtual void Disconnected();
     virtual void Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy);  
     virtual void Idle();
-  private:  
+  private:
+      
 };
+
+#endif /* MODEL_MODELNAME */

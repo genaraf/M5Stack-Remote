@@ -1,21 +1,15 @@
-#define M5STICKCPLUS
-
-#ifdef M5STICKCPLUS
-#include "M5StickCPlus.h"
-#else 
-#include "M5StickC.h"
-#endif /* M5STICKCPLUS */
+#include "config.h"
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <esp_wifi.h>
 
 #include "EEPROM.h"
-#include "JoyC.h"
 
-#ifdef M5STICKCPLUS
-  #define LCD_WIDTH  135
-  #define LCD_HEIGHT 240
+#if defined(M5STICKCPLUS)
+  #define SCR_ROTATION 4 
+  #define LCD_WIDTH   135
+  #define LCD_HEIGHT  240
   #define STATUS_HEIGHT 25
   #define MSG_TOP     40
   #define MSG_LEFT    5
@@ -24,7 +18,9 @@
   #define VOLT_OFFSET 25
   #define RSSI_OFSET  90
   #define TEXT_SIZE   2
-#else
+  #define ENABLE_AXP
+#elif defined(M5STICK) 
+  #define SCR_ROTATION 4 
   #define LCD_WIDTH  80
   #define LCD_HEIGHT 140
   #define STATUS_HEIGHT 20
@@ -35,6 +31,19 @@
   #define VOLT_OFFSET 22
   #define RSSI_OFSET  60
   #define TEXT_SIZE   1
+  #define ENABLE_AXP
+#elif defined(M5STACK)
+  #define SCR_ROTATION 1
+  #define LCD_WIDTH  220
+  #define LCD_HEIGHT 240
+  #define STATUS_HEIGHT 25
+  #define MSG_TOP     40
+  #define MSG_LEFT    5
+  #define TEXT_LEFT   15
+  #define LINE_SPACE  20
+  #define VOLT_OFFSET 25
+  #define RSSI_OFSET  90
+  #define TEXT_SIZE   2
 #endif /* M5STICKCPLUS */ 
  
 enum {
@@ -56,7 +65,7 @@ enum {
 extern const unsigned char connect_on[800];
 extern const unsigned char connect_off[800];
 
-JoyC joyc;
+JOYSTICK joyc;
 WiFiUDP Udp;
 TFT_eSprite Disbuff = TFT_eSprite(&M5.Lcd);
 
@@ -115,9 +124,11 @@ void ReceiveMessage() {
       Disbuff.printf("%s", &rxdata[6]);
       Disbuff.pushSprite(0, 0);
       lockDialplayData = 500;
-  #ifdef M5STICKCPLUS
+  #ifdef M5STICKPLUS
       M5.Beep.tone(1500, 1000);
-  #endif /* M5STICKCPLUS */      
+  #elif defined(M5STACK)
+      M5.Speaker.tone(495, 200);    
+  #endif /* M5STICKPLUS */        
     }
   }  
 }
@@ -183,17 +194,22 @@ void setup() {
 
   lXOffset = lYOffset = rXOffset = rYOffset = gXOffset = gYOffset = 0;
   M5.begin();
-//  M5.Axp.SetChargeCurrent(CURRENT_100MA);
 
+#ifndef M5STACK
   Wire.begin(0, 26, 400000);
-  
+#else 
+  Wire.begin();
+  M5.Power.begin();
+#endif   
+
+  joyc.Init();
   EEPROM.begin(EEPROM_SIZE);
 
   #ifdef M5STICKCPLUS
       M5.Beep.setVolume(10);
   #endif /* M5STICKCPLUS */
 
-  M5.Lcd.setRotation(4);
+  M5.Lcd.setRotation(SCR_ROTATION);
   M5.Lcd.setSwapBytes(false);
   Disbuff.createSprite(LCD_WIDTH, LCD_HEIGHT);
   Disbuff.setSwapBytes(true);
@@ -211,10 +227,8 @@ void setup() {
   Disbuff.setTextSize(TEXT_SIZE);
   Disbuff.setTextColor(GREEN);
   Disbuff.setCursor(55, 6);
-
   Disbuff.pushImage(0, 0, 20, 20, (uint16_t *)connect_off);
   Disbuff.pushSprite(0, 0);
-
   if (( EEPROM.read(0) != 0x56 ) || ( M5.BtnA.read() == 1 ))
   {
 #ifdef LONG_RANGE
@@ -340,6 +354,7 @@ void setup() {
 }
 
 void readData() {
+    joyc.Read();
     SendBuff[L_X_OFFSET] = joyc.GetX(0);
     SendBuff[L_Y_OFFSET] = joyc.GetY(0);
     SendBuff[R_X_OFFSET] = joyc.GetX(1);
@@ -408,10 +423,12 @@ void displayStatus() {
     Disbuff.printf("%03d", 0);      
   }
   Disbuff.setCursor(VOLT_OFFSET, 7);
+#ifdef ENABLE_AXP  
   if(M5.Axp.GetWarningLevel()) {
     Disbuff.setTextColor(RED);
   }
   Disbuff.printf("%.2fV", M5.Axp.GetBatVoltage());  
+#endif /* ENABLE_AXP */
 }
 
 void loop() {

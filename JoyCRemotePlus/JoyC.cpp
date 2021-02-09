@@ -6,8 +6,9 @@
  * @FilePath: /M5StickC/examples/Hat/JoyC/JoyC.cpp
  */
 
+#include "config.h"
+#ifdef JOYC
 #include "JoyC.h"
-#include "M5StickCPlus.h"
 
 #define JOYC_ADDR 0x38
 
@@ -49,27 +50,10 @@ uint8_t JoyC::GetY(uint8_t pos)
     return value;
 }
 
-uint16_t JoyC::GetAngle(uint8_t pos)
-{
-    uint8_t i2c_read_buff[2];
-    uint8_t read_reg;
-    read_reg = (pos == 0) ? JOYC_LEFT_ANGLE_REG : JOYC_RIGHT_ANGLE_REG;
-    M5.I2C.readBytes(JOYC_ADDR, read_reg, 2, i2c_read_buff);
-    return (i2c_read_buff[0] << 8) | i2c_read_buff[1];
-}
-
-uint16_t JoyC::GetDistance(uint8_t pos)
-{
-    uint8_t i2c_read_buff[2];
-    uint8_t read_reg;
-    read_reg = (pos == 0) ? JOYC_LEFT_DISTANCE_REG : JOYC_RIGHT_DISTANCE_REG;
-    M5.I2C.readBytes(JOYC_ADDR, read_reg, 2, i2c_read_buff);
-    return (i2c_read_buff[0] << 8) | i2c_read_buff[1];    
-}
-
 uint8_t JoyC::GetPress(uint8_t pos)
 {
     uint8_t press_value = 0;
     M5.I2C.readByte(JOYC_ADDR, JOYC_PRESS_REG, &press_value);
     return (press_value & ((pos == 0) ? 0x10 : 0x01)) != 0;
 }
+#endif /* JOYC */
