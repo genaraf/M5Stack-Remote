@@ -8,13 +8,15 @@ public:
   virtual void Init();
   virtual void Read();
   virtual void SetLedColor(uint32_t color);
-  virtual uint8_t GetX(uint8_t pos) { return (pos == 0)?x:100; } 
-  virtual uint8_t GetY(uint8_t pos) { return (pos == 0)?y:100; }
-  virtual uint8_t GetPress(uint8_t pos) { return (pos == 0)?btn:0; }
+  virtual uint8_t GetX(uint8_t pos);
+  virtual uint8_t GetY(uint8_t pos);
+  virtual uint8_t GetPress(uint8_t pos) { return (pos == jmode)?btn:0; }
 private:
-  uint8_t x;
-  uint8_t y;
+  uint8_t jmode;
+  int16_t x_data;
+  int16_t y_data;
   uint8_t btn;
+  void Led(int indexOfLED, int r, int g, int b);
 };
 
 #endif /* _facejoystick_h_ */
