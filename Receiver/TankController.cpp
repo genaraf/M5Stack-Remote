@@ -21,7 +21,7 @@
 // G27 - Neopixel
 // G39 - Button
 #include <M5Atom.h>
-#include <Servo.h>
+#include <ESP32Servo.h>
 
 struct SrvCtl {
   Servo* srv;
@@ -63,20 +63,31 @@ void TankController::Init() {
   
     for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
       servs[i].srv = new Servo();
+      servs[i].srv->attach(servs[i].pin);
+      servs[i].srv->write(servs[i].def);
     }
-    SetDefault(2);
     delay(200);
 }
 
 void TankController::Connected() {
   M5.dis.drawpix(0, 0xf00000); 
-  Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Tank Connected");  
-  digitalWrite(led, LOW);     
+//  Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Tank Connected");  
 }
 
 void TankController::Disconnected() {
-  digitalWrite(led, HIGH);
   M5.dis.drawpix(0, 0x00f000);
+}
+
+/* Id - 0, 1  sped -100 - 100 */
+void TankController::SetPosition(int id, int pos) {
+  if((id >= 0) && (id < sizeof(servs)/sizeof(servs[0]))) {
+    servs[id].pos = servs[id].def + pos;    
+    if(servs[id].pos > servs[id].max)
+      servs[id].pos = servs[id].max;
+    if(servs[id].pos < servs[id].min)
+      servs[id].pos = servs[id].min;
+    servs[id].srv->write((int)servs[id].pos);  
+  } 
 }
 
 void TankController::Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy) {
@@ -90,8 +101,9 @@ void TankController::Command(int lx, int ly, int rx, int ry, unsigned char btn, 
     lspeed -= lx;
     rspeed += lx;  
   }
-  MotorControl(0, lspeed);     
-  MotorControl(1, rspeed);     
+  SetPosition(0, lspeed);     
+  SetPosition(1, rspeed); 
+  SetPosition(2, 100 - ry * 2);        
 }
 
 void TankController::Idle() { 
