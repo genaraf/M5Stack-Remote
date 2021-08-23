@@ -2,8 +2,8 @@
 #define __config_h
 
 //#define M5STICK
-//#define M5STICKCPLUS
-#define M5STACK
+#define M5STICKCPLUS
+//#define M5STACK
 
 #if defined(M5STICKCPLUS)
 #include <M5StickCPlus.h>
