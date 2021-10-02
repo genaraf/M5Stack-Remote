@@ -11,6 +11,7 @@ class TriTrackController : public ControlBase {
     virtual void Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy);  
     virtual void Idle();
   private: 
-    void SetPosition(int id, int speed); 
+    void SetPosition(int id, int speed);
+    int getDestination();
 };
 #endif /* MODEL_TRI_TRACK */

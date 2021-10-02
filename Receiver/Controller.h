@@ -1,4 +1,6 @@
 #ifdef MODEL_MODELNAME
+#ifndef __controller_h
+#define __controller_h
 
 #include "control_base.h"
 
@@ -13,5 +15,6 @@ class Controller : public ControlBase {
   private:
       
 };
+#endif /* __controller_h */
 
 #endif /* MODEL_MODELNAME */

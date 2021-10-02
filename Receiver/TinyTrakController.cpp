@@ -55,7 +55,7 @@ void TinyTrakController::Init() {
   Wire.begin(0, 26, 10000);
   M5.dis.drawpix(0, 0x00f000);
 
-  #ifdef BATTERY_CHECK  
+#ifdef BATTERY_CHECK  
   pinMode(GPIO_NUM_34, INPUT);
   gpio_pulldown_dis(GPIO_NUM_23);
   gpio_pullup_dis(GPIO_NUM_23);

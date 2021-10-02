@@ -1,4 +1,5 @@
-
+#ifndef __control_base_h
+#define __control_base_h
 typedef void (*MessageCallback)(unsigned char event_id, unsigned int color, char* text);
 
 #define MESSAGE_TYPE_TEXT 1
@@ -29,3 +30,5 @@ class ControlBase {
     MessageCallback msg;  
     
 };
+
+#endif /* __control_base_h */

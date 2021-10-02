@@ -29,6 +29,7 @@ uint8_t txCnt = 0;
 
 void setup()
 {
+  cntrl.Init();
   cntrl.SetMessageCallback(sendMessage);
   Serial.begin(115200);
 
@@ -43,7 +44,6 @@ void setup()
   server.begin();
 
   Udp1.begin(1003);
-  cntrl.Init();
 }
 
 void sendMessage(unsigned char event_id, unsigned int color, char* text) {
