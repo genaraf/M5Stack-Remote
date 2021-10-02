@@ -68,7 +68,7 @@ void RovercController::Init() {
     M5.Lcd.setSwapBytes(false);
     Disbuff.createSprite(160, 80);
     Disbuff.setSwapBytes(true);
-    Disbuff.fillRect(0, 0, 160, 80, Disbuff.color565(50, 50, 50));
+    Disbuff.fillRect(0, 0, 160, 20, Disbuff.color565(50, 50, 50));
     Disbuff.setTextSize(2);
     Disbuff.setTextColor(WHITE);
     Disbuff.setCursor(15, 35);
@@ -96,11 +96,16 @@ void RovercController::Command(int lx, int ly, int rx, int ry, unsigned char btn
 }
 
 void RovercController::Idle() {
+    float volt = M5.Axp.GetBatVoltage();
     Disbuff.fillRect(0, 0, 160, 20, Disbuff.color565(50, 50, 50));
     Disbuff.setTextSize(1);
-    Disbuff.setTextColor(WHITE);
-    Disbuff.setCursor(5, 5);
-    Disbuff.printf("Bat: %.3fv", M5.Axp.GetBatVoltage()); 
+    if(volt < 3.3) {
+      Disbuff.setTextColor(RED);      
+    } else {
+      Disbuff.setTextColor(GREEN);
+    }  
+    Disbuff.setCursor(20, 5);
+    Disbuff.printf("Bat: %.3fV", volt); 
     Disbuff.pushSprite(0, 0);
     M5.update();
 }
