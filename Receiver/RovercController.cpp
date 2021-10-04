@@ -29,6 +29,15 @@ uint8_t RovercController::I2CWritebuff(uint8_t Addr, uint8_t *Data, uint16_t Len
     return Wire.endTransmission();
 }
 
+void RovercController::SetServo(int id, int degree) {
+  if((id < 0) || (id > 1)) {
+    return;
+  }
+  degree = min(90, int(degree));
+  degree = max(0, int(degree));
+  I2CWrite1Byte(0x10+id, degree);
+}
+
 uint8_t RovercController::Setspeed(int16_t Vtx, int16_t Vty, int16_t Wt)
 {
     Wt = (Wt > 100) ? 100 : Wt;
@@ -75,13 +84,12 @@ void RovercController::Init() {
     Disbuff.print("RoverC");
     Disbuff.pushSprite(0, 0);
     M5.update();
-#if 1
+
     // Charge
     Wire1.beginTransmission(0x34);
     Wire1.write(0x33);
     Wire1.write(0xC0 | (4 & 0x0f));
     Wire1.endTransmission();
-#endif    
 }
 
 void RovercController::Connected() {
@@ -89,10 +97,12 @@ void RovercController::Connected() {
 
 void RovercController::Disconnected() {
   Setspeed(0, 0, 0);
+  SetServo(0, 0);
 }
 
 void RovercController::Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy) {
-  Setspeed(lx, ly, rx);
+  Setspeed(rx, ly, lx);
+  SetServo(0, ry);
 }
 
 void RovercController::Idle() {

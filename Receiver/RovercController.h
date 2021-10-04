@@ -18,6 +18,7 @@ class RovercController : public ControlBase {
     uint8_t I2CWrite1Byte(uint8_t Addr, uint8_t Data);
     uint8_t I2CWritebuff(uint8_t Addr, uint8_t *Data, uint16_t Length);
     uint8_t Setspeed(int16_t Vtx, int16_t Vty, int16_t Wt);
+    void    SetServo(int id, int angle);
   private:
     int16_t speed_buff[4];
     int8_t  speed_sendbuff[4];
