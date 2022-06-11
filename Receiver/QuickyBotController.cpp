@@ -20,14 +20,6 @@
 #define AUTOMATIC_PAUSE 2000
 
 
-enum {
-  MANUAL_MODE,
-  AUTOMATIC1_MODE,
-  AUTOMATIC2_MODE,
-  GUARD_MODE,
-  MAX_MODE
-} ROBOT_MODE;
-
 Servo leftMotor;
 Servo rightMotor;
 PiezoEffects mySounds( BUZZER_PIN ); //PiezoEffects object
@@ -55,7 +47,7 @@ void QuickyBotController::motorsDetach() {
   motorsOn = false;
 }
 
-void changeMode(ROBOT_MODE mode) {
+void QuickyBotController::setMode(QuickyBotController::ROBOT_MODE mode) {
   switch(mode) {
     case MANUAL_MODE:
       Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Mode: manual");
@@ -106,7 +98,7 @@ int16_t QuickyBotController::getDistanceCentim() {
 
 void QuickyBotController::chargingMode() {
   Serial.println("Start Charging mode");
-  WiFi.mode(WIFI_OFF);
+  // WiFi.mode(WIFI_OFF);
 
   motorsDetach();
   mySounds.play(soundLaugh);
@@ -130,8 +122,7 @@ void QuickyBotController::chargingMode() {
 void QuickyBotController::lowBatteryMode()
 {
   Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Low battery");
-  if(Blynk.connected()) Blynk.disconnect();
-  WiFi.mode(WIFI_OFF);
+//  WiFi.mode(WIFI_OFF);
   strip.clear();
   strip.show(); // ?? 
   motorsDetach();
@@ -225,15 +216,15 @@ void QuickyBotController::Idle() {
             break;
 
         case AUTOMATIC1_MODE:
-            Automatic1Mode();
+            automatic1Mode();
             break;
 
         case AUTOMATIC2_MODE:
-            Automatic2Mode();
+            automatic2Mode();
             break;
 
         case GUARD_MODE:
-            GuardMode();
+            guardMode();
             break;
     }
 
