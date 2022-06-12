@@ -28,10 +28,11 @@
       void chargingMode();
       void lowBatteryMode();
       void setMode(QuickyBotController::ROBOT_MODE mode);
+      void setPosition(int id, int pos);
+      bool isLowBattary();
+
       // variables
       QuickyBotController::ROBOT_MODE robotMode;
-      int ledtMotorOffset;
-      int rightMotorOffset;
       int distance;
       int voltage;
       bool motorsOn;

@@ -1,6 +1,7 @@
 #include "config.h"
 
 #ifdef MODEL_QUICKYBOT
+#include <ESP8266WiFi.h>
 
 #include "QuickyBotController.h"
 
@@ -22,6 +23,25 @@
 
 Servo leftMotor;
 Servo rightMotor;
+
+struct SrvCtl {
+  Servo* srv;
+  int pin;
+  int min;
+  int max;
+  int def;
+  float rate;
+  float pos;
+  
+};
+
+
+SrvCtl servs[] = {
+    { NULL, D6, 0, 180, 101, 0.01, 0 },
+    { NULL, D5, 0, 180, 90, 0.01, 0 }
+};
+
+
 PiezoEffects mySounds( BUZZER_PIN ); //PiezoEffects object
 
 #define BRIGHTNESS 50
@@ -33,24 +53,31 @@ const char* QuickyBotController::GetId() {
 }
 
 void QuickyBotController::motorsAttach() {
-  if(!leftMotor.attached()) leftMotor.attach(LEFT_MOTOR_PIN);
-  if(!rightMotor.attached()) rightMotor.attach(RIGHT_MOTOR_PIN);
-  leftMotor.write(90 + ledtMotorOffset);
-  rightMotor.write(90 + rightMotorOffset);
-  motorsOn = true;  
+  if(!motorsOn) {
+    for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
+      servs[i].srv->attach(servs[i].pin);
+      servs[i].srv->write(servs[i].def);
+    }
+    motorsOn = true;  
+  }
   
 }
 
 void QuickyBotController::motorsDetach() {
-  if(leftMotor.attached()) leftMotor.detach();
-  if(rightMotor.attached()) rightMotor.detach();
-  motorsOn = false;
+  if(motorsOn) {
+    for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
+      servs[i].srv->write(servs[i].def);
+//      servs[i].srv->detach(servs[i].pin);
+    }
+    motorsOn = false;
+  }
 }
 
 void QuickyBotController::setMode(QuickyBotController::ROBOT_MODE mode) {
   switch(mode) {
     case MANUAL_MODE:
       Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Mode: manual");
+      motorsAttach();
       strip.setPixelColor(0, strip.Color(0,150,0));
       strip.show();  
       lastActivity = millis();
@@ -98,7 +125,7 @@ int16_t QuickyBotController::getDistanceCentim() {
 
 void QuickyBotController::chargingMode() {
   Serial.println("Start Charging mode");
-  // WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_OFF);
 
   motorsDetach();
   mySounds.play(soundLaugh);
@@ -122,7 +149,8 @@ void QuickyBotController::chargingMode() {
 void QuickyBotController::lowBatteryMode()
 {
   Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Low battery");
-//  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_OFF);
+  delay(500); 
   strip.clear();
   strip.show(); // ?? 
   motorsDetach();
@@ -162,9 +190,12 @@ void QuickyBotController::guardMode() {
   distance = getDistanceCentim();    
 }
 
+bool QuickyBotController::isLowBattary() {
+  return false;
+// return analogRead(VBAT_PIN) < LOW_BATTERY;
+}
+
 void QuickyBotController::Init() { 
-    ledtMotorOffset = 12;
-    rightMotorOffset = 0;
     distance = 0;
     voltage = 0;
     motorsOn = false;
@@ -181,9 +212,14 @@ void QuickyBotController::Init() {
     if(digitalRead(CHARGING_DETECT_PIN) == HIGH)   {
         chargingMode();
     } 
-    if((voltage = analogRead(VBAT_PIN)) < LOW_BATTERY)   {
+    if(isLowBattary())   {
         lowBatteryMode();
-    } 
+    }
+    for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
+      servs[i].srv = new Servo();
+    }
+    motorsAttach();
+    delay(200); 
 }
 
 void QuickyBotController::Connected() {
@@ -199,20 +235,56 @@ void QuickyBotController::Disconnected() {
     strip.show(); 
 }
 
+/* Id - 0, 1  sped -100 - 100 */
+void QuickyBotController::setPosition(int id, int pos) {
+  if((id >= 0) && (id < sizeof(servs)/sizeof(servs[0]))) {
+    servs[id].pos = servs[id].def + pos;    
+    if(servs[id].pos > servs[id].max)
+      servs[id].pos = servs[id].max;
+    if(servs[id].pos < servs[id].min)
+      servs[id].pos = servs[id].min;
+    servs[id].srv->write((int)servs[id].pos);  
+  } 
+}
+
 void QuickyBotController::Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy) {
-  
+  if(robotMode == MANUAL_MODE) {
+    int lspeed = 0;
+    int rspeed = 0;
+    if(abs(ly) > 10) {
+      lspeed = -ly;
+      rspeed = ly;
+    
+    }
+    if(abs(lx) > 10) {
+      lspeed += lx;
+      rspeed += lx;  
+    }
+    if((lspeed != 0) || (rspeed != 0)) {
+      lastActivity = millis();
+    }
+    Serial.print("lspeed: ");
+    Serial.println(lspeed);
+    setPosition(0, lspeed);     
+    setPosition(1, rspeed);
+    if(!motorsOn) {
+      motorsAttach();  
+    }
+           
+  }
 }
 
 void QuickyBotController::Idle() { 
     if(digitalRead(CHARGING_DETECT_PIN) == HIGH)   {
         chargingMode();
     } 
-    if((voltage = analogRead(VBAT_PIN)) < LOW_BATTERY)   {
+    if(isLowBattary())   {
         lowBatteryMode();
     } 
 
     switch(robotMode) {
-        case MANUAL_MODE:   
+        case MANUAL_MODE:
+            manualMode();   
             break;
 
         case AUTOMATIC1_MODE:
