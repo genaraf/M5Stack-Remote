@@ -38,8 +38,8 @@ struct SrvCtl {
 #define SR04_TRIGGER 32
 
 SrvCtl servs[] = {
-    { NULL, 22, 0, 180, 91, 0.01, 0 },
-    { NULL, 19, 0, 180, 91, 0.01, 0 },
+    { NULL, 22, 0, 180, 93, 0.01, 0 }, // left
+    { NULL, 19, 0, 180, 93, 0.01, 0 }, // right
     { NULL, 23, 0, 180, 160, 0.01, 0 }
 };
 
@@ -55,7 +55,7 @@ void TriTrackController::Init() {
   delay(50);
   M5.update();
   Wire.begin(0, 26, 10000);
-  M5.dis.drawpix(0, 0x00f000);
+  M5.dis.drawpix(0, 0xf00000);
 
 #ifdef BATTERY_CHECK  
   pinMode(GPIO_NUM_34, INPUT);
@@ -76,12 +76,12 @@ void TriTrackController::Init() {
 }
 
 void TriTrackController::Connected() {
-  M5.dis.drawpix(0, 0xf00000); 
+  M5.dis.drawpix(0, 0x00f000);
 //  Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Tank Connected");  
 }
 
 void TriTrackController::Disconnected() {
-  M5.dis.drawpix(0, 0x00f000);
+  M5.dis.drawpix(0, 0xf00000); 
 }
 
 int TriTrackController::getDestination() {
@@ -122,12 +122,12 @@ void TriTrackController::Command(int lx, int ly, int rx, int ry, unsigned char b
   int lspeed = 0;
   int rspeed = 0;
   if(abs(ly) > 10) {
-    lspeed = -ly;
-    rspeed = +ly;    
+    lspeed = +ly;
+    rspeed = -ly;    
   }
   if(abs(lx) > 10) {
-    lspeed = lx;
-    rspeed = lx;  
+    lspeed = -lx;
+    rspeed = -lx;  
   }
   SetPosition(0, lspeed);     
   SetPosition(1, rspeed); 
