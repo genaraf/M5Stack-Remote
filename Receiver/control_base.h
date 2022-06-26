@@ -8,6 +8,13 @@ typedef void (*MessageCallback)(unsigned char event_id, unsigned int color, char
 
 class ControlBase {
   public:
+    enum {
+        BTN_JOYC1 = 0x01,
+        BTN_JOYC0 = 0x02,
+        BTN_M5A   = 0x04,
+        BTN_M5B   = 0x08
+      } BUTTON_STATE;
+    
     ControlBase() {
       msg = 0;
     }

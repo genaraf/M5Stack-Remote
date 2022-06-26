@@ -10,7 +10,7 @@
 
 CONTROLLER cntrl;
 
-#define DEBUG
+//#define DEBUG
 
 const char *password = "77777777";
 

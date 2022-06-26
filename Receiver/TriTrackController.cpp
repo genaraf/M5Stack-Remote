@@ -51,6 +51,7 @@ const char* TriTrackController::GetId() {
 }
 
 void TriTrackController::Init() { 
+  btn_last = 0;
   M5.begin(true, false, true);
   delay(50);
   M5.update();
@@ -119,6 +120,27 @@ void TriTrackController::SetPosition(int id, int pos) {
 }
 
 void TriTrackController::Command(int lx, int ly, int rx, int ry, unsigned char btn, int gx, int gy) {
+
+  if((btn_last > 0) && ((btn & BTN_JOYC1) == 0)) {
+    mode = (ROBOT_MODE)((mode +1) % MAX_MODE);
+    Serial.print("New Mode: ");
+    Serial.println(mode);
+    switch(mode) {
+      case MANUAL_MODE:
+        Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "MANUAL");  
+        break;
+      case AUTOMATIC1_MODE:
+        Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "AUTO1");  
+        break;
+      case AUTOMATIC2_MODE:
+        Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "AUTO2");  
+        break;
+
+      default:
+        mode = MANUAL_MODE;
+    }
+  }
+  btn_last = btn & BTN_JOYC1;  
   int lspeed = 0;
   int rspeed = 0;
   if(abs(ly) > 10) {
@@ -132,8 +154,8 @@ void TriTrackController::Command(int lx, int ly, int rx, int ry, unsigned char b
   SetPosition(0, lspeed);     
   SetPosition(1, rspeed); 
   SetPosition(2, 100 - ry * 2);        
-  Serial.print("Destination: ");
-  Serial.println(getDestination());
+//  Serial.print("Destination: ");
+//  Serial.println(getDestination());
 }
 
 void TriTrackController::Idle() { 
