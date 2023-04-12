@@ -5,7 +5,7 @@
 
 #include "config.h"
 
-#ifdef MODEL_ROVERC
+#if defined(MODEL_ROVERC) || defined(MODEL_ROVERCP)
 #include "RovercController.h"
 
 TFT_eSprite Disbuff = TFT_eSprite(&M5.Lcd);
@@ -65,7 +65,7 @@ uint8_t RovercController::Setspeed(int16_t Vtx, int16_t Vty, int16_t Wt)
     return I2CWritebuff(0x00, (uint8_t *)speed_sendbuff, 4);
 }
 
-const char* RovercController::GetId() {
+const char* RovercController::GetId() {  
   return "M5AP_RoverC";
 }
 
@@ -75,9 +75,9 @@ void RovercController::Init() {
     Wire.begin(0, 26, 10000);
     M5.Lcd.setRotation(1);
     M5.Lcd.setSwapBytes(false);
-    Disbuff.createSprite(160, 80);
+    Disbuff.createSprite(LCD_WIDTH, LCD_HEIGH);
     Disbuff.setSwapBytes(true);
-    Disbuff.fillRect(0, 0, 160, 20, Disbuff.color565(50, 50, 50));
+    Disbuff.fillRect(0, 0, LCD_WIDTH, 20, Disbuff.color565(50, 50, 50));
     Disbuff.setTextSize(2);
     Disbuff.setTextColor(WHITE);
     Disbuff.setCursor(15, 35);
@@ -107,7 +107,7 @@ void RovercController::Command(int lx, int ly, int rx, int ry, unsigned char btn
 
 void RovercController::Idle() {
     float volt = M5.Axp.GetBatVoltage();
-    Disbuff.fillRect(0, 0, 160, 20, Disbuff.color565(50, 50, 50));
+    Disbuff.fillRect(0, 0, LCD_WIDTH, 20, Disbuff.color565(50, 50, 50));
     Disbuff.setTextSize(1);
     if(volt < 3.3) {
       Disbuff.setTextColor(RED);      

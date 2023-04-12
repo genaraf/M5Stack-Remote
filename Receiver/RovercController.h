@@ -1,10 +1,18 @@
-#ifdef MODEL_ROVERC
+#if defined(MODEL_ROVERC) || defined(MODEL_ROVERCP)
 #ifndef __RovercController_h
 #define __RovercController_h
 
 #include "control_base.h"
 
-#include <M5StickC.h>
+#ifdef MODEL_ROVERC 
+  #include <M5StickC.h>
+  #define LCD_WIDTH 160
+  #define LCD_HEIGH 80  
+#else
+  #include <M5StickCPlus.h>
+  #define LCD_WIDTH 240
+  #define LCD_HEIGH 135  
+#endif
 
 class RovercController : public ControlBase {
   public:
@@ -25,4 +33,4 @@ class RovercController : public ControlBase {
   
 };
 #endif  /* __RovercController_h */
-#endif /* MODEL_ROVERC */
+#endif /* MODEL_ROVERC || MODEL_ROVERCP */
