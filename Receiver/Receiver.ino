@@ -28,9 +28,10 @@ uint8_t txCnt = 0;
 
 void setup()
 {
+  Serial.begin(115200);
+  delay(200);
   cntrl.Init();
   cntrl.SetMessageCallback(sendMessage);
-  Serial.begin(115200);
 
   //Set device in STA mode to begin with
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1),
@@ -43,6 +44,8 @@ void setup()
   server.begin();
 
   Udp1.begin(1003);
+  delay(50);
+  Udp1.flush(); 
 }
 
 void sendMessage(unsigned char event_id, unsigned int color, char* text) {
