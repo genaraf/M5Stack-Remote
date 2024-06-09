@@ -36,8 +36,8 @@ struct SrvCtl {
 
 
 SrvCtl servs[] = {
-    { NULL, 22, 0, 180, 91, 0.01, 0 },
-    { NULL, 19, 0, 180, 93, 0.01, 0 },
+    { NULL, 22, 0, 180, 90, 0.01, 0 }, // right
+    { NULL, 19, 0, 180, 95, 0.01, 0 }, // left
     { NULL, 23, 0, 180, 160, 0.01, 0 }
 };
 
@@ -53,14 +53,17 @@ void TinyTrakController::Init() {
   delay(50);
   M5.update();
   Wire.begin(0, 26, 10000);
-  M5.dis.drawpix(0, 0x00f000);
+  Disconnected();
 
-#ifdef BATTERY_CHECK  
+
+#ifdef BATTERY_CHECK
+  // Pin 23 to ground 33K
+  // Pin 23 to Lipo battery 68K
   pinMode(GPIO_NUM_34, INPUT);
   gpio_pulldown_dis(GPIO_NUM_23);
   gpio_pullup_dis(GPIO_NUM_23);
 #endif /* BATTERY_CHECK */
-  
+
     for(int i = 0; i < sizeof(servs)/sizeof(servs[0]); i++) {
       servs[i].srv = new Servo();
       servs[i].srv->attach(servs[i].pin);
@@ -70,12 +73,12 @@ void TinyTrakController::Init() {
 }
 
 void TinyTrakController::Connected() {
-  M5.dis.drawpix(0, 0xf00000); 
+  M5.dis.drawpix(0, 0x00f000);
 //  Message(MESSAGE_TYPE_TEXT, MESSAGE_COLOR_GREEN, "Tank Connected");  
 }
 
 void TinyTrakController::Disconnected() {
-  M5.dis.drawpix(0, 0x00f000);
+  M5.dis.drawpix(0, 0xf00000); 
 }
 
 /* Id - 0, 1  sped -100 - 100 */
@@ -95,14 +98,14 @@ void TinyTrakController::Command(int lx, int ly, int rx, int ry, unsigned char b
   int rspeed = 0;
   if(abs(ly) > 10) {
     lspeed = ly;
-    rspeed = ly;    
+    rspeed = -ly;    
   }
   if(abs(lx) > 10) {
     lspeed -= lx;
-    rspeed += lx;  
+    rspeed -= lx;  
   }
-  SetPosition(0, lspeed);     
-  SetPosition(1, rspeed); 
+  SetPosition(0, rspeed); // right    
+  SetPosition(1, lspeed); // left
   SetPosition(2, 100 - ry * 2);        
 }
 

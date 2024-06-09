@@ -8,6 +8,7 @@
 #include "UsonicI2c.h"
 
 UNIT_HBRIDGE drv[4];
+UsomicI2C usonic;
 
 void BigRoverController::SetServo(int id, int degree) {
   if((id < 0) || (id > 1)) {
@@ -74,7 +75,8 @@ void BigRoverController::Init() {
       drv[i].setDriverPWMFreq(5000);
       delay(10);
     }
-    
+    usonic.begin(&Wire); 
+    usonic.setAutoTrigger(150);   
     M5.dis.drawpix(0, 0x0000f0);
     delay(50);                    // delay 50ms.
     M5.update();
@@ -103,7 +105,11 @@ void BigRoverController::Command(int lx, int ly, int rx, int ry, unsigned char b
 
 void BigRoverController::Idle() {
     M5.update();
-    delay(2); 
+    delay(2);
+    auto dist = usonic.getDistance();
+    if(dist > 0) {
+      Serial.printf("Distance:%f\n", dist);
+    } 
 //    canvas.printf("%.2fV", drv[0]].getAnalogInput(_12bit) / 4095.0f * 3.3f / 0.09f);
 }
 #endif /* MODEL_BIGROVER */

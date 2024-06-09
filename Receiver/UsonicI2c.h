@@ -13,10 +13,13 @@ class UsomicI2C {
     uint8_t _sda;
     uint8_t _speed;
     unsigned long _time;
+    uint16_t _autoTrigger;
+    bool _triggerOn;
    public:
     void begin(TwoWire* wire = &Wire, uint8_t addr = 0x57, uint8_t sda = SDA,
                uint8_t scl = SCL, uint32_t speed = 200000L);
     void trigger();           
     float getDistance();
+    void setAutoTrigger(uint16_t msec); // 0 - manual, min = 150msec 
 };
 #endif // _UsonicI2C_
